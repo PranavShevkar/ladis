@@ -258,12 +258,15 @@ function startNewRound(room: Room) {
   const deck = gameEngine.shuffleDeck(gameEngine.createDeck());
   room.currentDeck = deck; // Store the deck for this round
   
+  // Ensure players array is synchronized
+  room.gameState.players = room.players;
+  
   room.gameState.shufflingTeam = gameEngine.determineShufflingTeam(room.gameState);
   room.gameState.hukumCaller = gameEngine.determineHukumCaller(room.gameState);
   room.gameState.phase = 'dealing_first';
   
   // Deal first 4 cards
-  gameEngine.dealFirstCards(deck, room.players);
+  gameEngine.dealFirstCards(deck, room.gameState.players);
   
   room.gameState.phase = 'vakhaai_check';
   console.log(`Round ${room.gameState.roundNumber} started in room ${room.code}`);
