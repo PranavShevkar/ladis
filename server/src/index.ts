@@ -70,10 +70,13 @@ io.on('connection', (socket) => {
       team: 0,
     };
 
+    const gameState = createInitialGameState();
+    gameState.players = [player];
+
     const room: Room = {
       code: roomCode,
       players: [player],
-      gameState: createInitialGameState(),
+      gameState: gameState,
       currentDeck: [],
     };
 
