@@ -66,14 +66,12 @@ function App() {
   const handleVakhaaiCall = (bet: 4 | 8 | 16 | 32) => {
     if (socket && roomCode) {
       socket.emit('vakhaaiCall', { roomCode, bet });
-      setVakhaaiChoice(null);
     }
   };
 
   const handleSkipVakhaai = () => {
     if (socket && roomCode) {
       socket.emit('skipVakhaai', roomCode);
-      setVakhaaiChoice(null);
     }
   };
 
