@@ -12,7 +12,6 @@ function App() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [myPlayerId, setMyPlayerId] = useState('');
   const [error, setError] = useState('');
-  const [vakhaaiChoice, setVakhaaiChoice] = useState<4 | 8 | 16 | 32 | null>(null);
 
   useEffect(() => {
     const newSocket = io(SERVER_URL);
@@ -169,7 +168,6 @@ function App() {
   }
 
   const myTeam = myPlayer.team;
-  const opponentTeam = myTeam === 0 ? 1 : 0;
 
   return (
     <div className="container">

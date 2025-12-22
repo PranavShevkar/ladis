@@ -2,32 +2,42 @@
 
 A 4-player partnership card game built with React, TypeScript, Node.js, and Socket.IO.
 
+## Live Demo
+
+- **Client**: [Deploy to Vercel](https://vercel.com/new)
+- **Server**: [Deploy to Railway](https://railway.app/new)
+
 ## Game Rules
 
 - **Players**: 4 players in 2 teams (Team 0: positions 0&2, Team 1: positions 1&3)
 - **Deck**: 32 cards (7-8-9-10-J-Q-K-A in all 4 suits)
-- **Objective**: Reduce your team's kalya deficit
+- **Objective**: Clear your team's kalya debt
 
-### Kalya System
-- Start at 0 kalyas
-- Shuffling team needs 4 hands to win round (subtract 10 kalyas)
-- Non-shuffling team needs 5 hands to win round (add 5 kalyas to opponent)
+### Kalya System (Debt Tracking)
+- Both teams start at 0 kalyas
+- Only one team has kalyas (debt) at a time
+- Team with kalyas shuffles
+- Shuffling team needs 4 tricks to win round → subtract 10 kalyas
+- Non-shuffling team needs 5 tricks to win round → add 5 kalyas to their account
 - 32 kalyas = 1 laddo
-- Negative kalyas = good, positive = bad (deficit tracking)
+- Kalyas are always positive (deficit)
 
 ### Vakhaai (Solo Betting)
 - After first 4 cards dealt, any player can call vakhaai
 - Bet amounts: 4, 8, 16, or 32 kalyas
-- Must win all 8 hands to succeed
-- Win: subtract bet from team's kalyas
-- Lose: add 2x bet to team's kalyas
+- Must reach team's target (4 or 5 tricks) to win
+- Win: subtract bet from calling team's kalyas
+- Lose: add 2x bet to calling team's kalyas
 
-### Deal Flow
-1. First 4 cards dealt to each player
-2. Vakhaai check (all players can call or skip)
-3. Choose hukum (trump suit)
-4. Deal remaining 4 cards
-5. Play 8 hands
+### Game Flow
+1. **First 4 cards** dealt to each player
+2. **Vakhaai check** - any player can bet or skip
+3. **Hukum selection** - one player from non-shuffling team chooses trump (alternates each round)
+4. **Remaining 4 cards** dealt
+5. **Play 8 hands** - hukum caller plays first, then clockwise
+6. **Round ends** when team reaches target (4 or 5 tricks)
+7. **Continuous play** - players keep remaining cards, play next round
+8. **New deck** dealt only when all cards exhausted
 
 ## Setup
 
