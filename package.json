@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd server && npm install && npm run build",
-    "start": "cd server && npm start"
-  },
-  "workspaces": [
-    "server",
-    "client"
-  ]
+    "install:server": "cd server && npm install",
+    "build:server": "cd server && npm run build",
+    "start:server": "cd server && npm start",
+    "build": "npm run install:server && npm run build:server",
+    "start": "npm run start:server"
+  }
 }
