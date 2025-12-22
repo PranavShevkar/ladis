@@ -256,34 +256,37 @@ export function checkRoundEnd(gameState: GameState): boolean {
     }
   } else {
     // Regular play resolution
-    // Winner's team gets kalya change based on which team they are
+    // Shuffling team = team with more kalyas (debt)
+    // Shuffling team wins = subtract 10 from their kalyas
+    // Non-shuffling team wins = add 5 to SHUFFLING team's kalyas (loser gets penalty)
+    
     if (team0Reached) {
       // Team 0 won
       if (gameState.shufflingTeam === 0) {
-        // Team 0 is shuffling team and won: subtract 10 kalyas from their account
+        // Shuffling team won: reduce their debt by 10
         if (gameState.teamScores.team0.kalyas >= 10) {
           gameState.teamScores.team0.kalyas -= 10;
         } else {
           gameState.teamScores.team0.kalyas = 0;
         }
       } else {
-        // Team 0 is non-shuffling team and won: add 5 kalyas to their account
-        gameState.teamScores.team0.kalyas += 5;
+        // Non-shuffling team won: add 5 to shuffling team (team 1)'s kalyas
+        gameState.teamScores.team1.kalyas += 5;
       }
     }
 
     if (team1Reached) {
       // Team 1 won
       if (gameState.shufflingTeam === 1) {
-        // Team 1 is shuffling team and won: subtract 10 kalyas from their account
+        // Shuffling team won: reduce their debt by 10
         if (gameState.teamScores.team1.kalyas >= 10) {
           gameState.teamScores.team1.kalyas -= 10;
         } else {
           gameState.teamScores.team1.kalyas = 0;
         }
       } else {
-        // Team 1 is non-shuffling team and won: add 5 kalyas to their account
-        gameState.teamScores.team1.kalyas += 5;
+        // Non-shuffling team won: add 5 to shuffling team (team 0)'s kalyas
+        gameState.teamScores.team0.kalyas += 5;
       }
     }
   }
@@ -310,6 +313,8 @@ export function resetForNextRound(gameState: GameState): void {
   gameState.handNumber = 1;
   gameState.tricks.team0 = 0;
   gameState.tricks.team1 = 0;
+  gameState.targetTricks.team0 = 0;
+  gameState.targetTricks.team1 = 0;
   gameState.hukum = null;
   gameState.vakhaaiCall = null;
   gameState.currentTrick = [];
@@ -336,6 +341,8 @@ export function dealNewDeck(gameState: GameState): void {
   gameState.handNumber = 1;
   gameState.tricks.team0 = 0;
   gameState.tricks.team1 = 0;
+  gameState.targetTricks.team0 = 0;
+  gameState.targetTricks.team1 = 0;
   gameState.hukum = null;
   gameState.vakhaaiCall = null;
   gameState.currentTrick = [];
