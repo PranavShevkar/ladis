@@ -2,11 +2,8 @@
   "name": "ladis",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "install:server": "cd server && npm install",
-    "build:server": "cd server && npm run build",
-    "start:server": "cd server && npm start",
-    "build": "npm run install:server && npm run build:server",
-    "start": "npm run start:server"
-  }
+  "workspaces": [
+    "server",
+    "client"
+  ]
 }
