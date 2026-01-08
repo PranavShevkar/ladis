@@ -272,14 +272,14 @@ export function checkRoundEnd(gameState: GameState): boolean {
       // Team 0 won
       if (gameState.shufflingTeam === 0) {
         // Shuffling team won: reduce their debt by 10
-        if (gameState.teamScores.team0.kalyas >= 10) {
-          gameState.teamScores.team0.kalyas -= 10;
+        if (gameState.teamScores.team0.points >= 10) {
+          gameState.teamScores.team0.points -= 10;
         } else {
-          gameState.teamScores.team0.kalyas = 0;
+          gameState.teamScores.team0.points = 0;
         }
       } else {
-        // Non-shuffling team won: add 5 to shuffling team (team 1)'s kalyas
-        gameState.teamScores.team1.kalyas += 5;
+        // Non-shuffling team won: add 5 to shuffling team (team 1)'s points
+        gameState.teamScores.team1.points += 5;
       }
     }
 
@@ -287,14 +287,14 @@ export function checkRoundEnd(gameState: GameState): boolean {
       // Team 1 won
       if (gameState.shufflingTeam === 1) {
         // Shuffling team won: reduce their debt by 10
-        if (gameState.teamScores.team1.kalyas >= 10) {
-          gameState.teamScores.team1.kalyas -= 10;
+        if (gameState.teamScores.team1.points >= 10) {
+          gameState.teamScores.team1.points -= 10;
         } else {
-          gameState.teamScores.team1.kalyas = 0;
+          gameState.teamScores.team1.points = 0;
         }
       } else {
-        // Non-shuffling team won: add 5 to shuffling team (team 0)'s kalyas
-        gameState.teamScores.team0.kalyas += 5;
+        // Non-shuffling team won: add 5 to shuffling team (team 0)'s points
+        gameState.teamScores.team0.points += 5;
       }
     }
   }
