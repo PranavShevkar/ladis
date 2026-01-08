@@ -62,7 +62,7 @@ export function dealSecondCards(deck: Card[], players: Player[]): void {
 
 // Determine which team is shuffling based on points account
 // Rule: Team with more points (losing team) shuffles
-// If both are 0 or equal, alternate based on round number
+// Round 1: Random selection, then alternate based on round number if equal
 export function determineShufflingTeam(gameState: GameState): 0 | 1 {
   const team0Points = gameState.teamScores.team0.points;
   const team1Points = gameState.teamScores.team1.points;
@@ -72,13 +72,18 @@ export function determineShufflingTeam(gameState: GameState): 0 | 1 {
   } else if (team1Points > team0Points) {
     return 1; // Team 1 has more points (losing), they shuffle
   } else {
-    // Equal or both zero: alternate based on round number
+    // Equal or both zero
+    if (gameState.roundNumber === 1) {
+      // First round: random selection
+      return Math.random() < 0.5 ? 0 : 1;
+    }
+    // Subsequent rounds: alternate based on round number
     return (gameState.roundNumber % 2) as 0 | 1;
   }
 }
 
 // Determine which player from non-shuffling team chooses hukum
-// Alternates between the two players in non-shuffling team each round
+// Round 1: Random selection, then alternates between the two players
 export function determineHukumCaller(gameState: GameState): number {
   const nonShufflingTeam = gameState.shufflingTeam === 0 ? 1 : 0;
   
@@ -88,7 +93,12 @@ export function determineHukumCaller(gameState: GameState): number {
   const position1 = nonShufflingTeam === 0 ? 0 : 1;
   const position2 = nonShufflingTeam === 0 ? 2 : 3;
   
-  // Alternate based on round number
+  // First round: random selection
+  if (gameState.roundNumber === 1) {
+    return Math.random() < 0.5 ? position1 : position2;
+  }
+  
+  // Subsequent rounds: alternate based on round number
   return (gameState.roundNumber % 2 === 1) ? position1 : position2;
 }
 
