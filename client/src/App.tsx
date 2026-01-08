@@ -34,6 +34,8 @@ function App() {
     });
 
     newSocket.on('gameState', (gs: GameState) => {
+      console.log('GameState received:', gs);
+      console.log('Players array:', gs.players);
       setGameState(gs);
     });
 
@@ -167,6 +169,17 @@ function App() {
 
   const myTeam = myPlayer.team;
 
+  // Calculate relative positions for player grid
+  // Player should always see themselves at bottom
+  // Other players arranged clockwise: top, left, right
+  const getRelativePosition = (offset: number) => {
+    return (myPlayer.position + offset) % 4;
+  };
+
+  const topPlayerPosition = getRelativePosition(2);    // Opposite player (partner)
+  const leftPlayerPosition = getRelativePosition(1);   // Next player clockwise
+  const rightPlayerPosition = getRelativePosition(3);  // Previous player (or +3 same as -1)
+
   return (
     <div className="container">
       <h1>Ladis Card Game</h1>
@@ -274,46 +287,46 @@ function App() {
 
       {/* Player Grid (4 players) */}
       <div className="player-grid">
-        {/* Top Player (position 2) */}
-        {getPlayerByPosition(2) && (
+        {/* Top Player (partner) */}
+        {getPlayerByPosition(topPlayerPosition) && (
           <div className="player-slot top">
             <div className="player-name">
-              {getPlayerByPosition(2)?.name}
-              {Math.abs(getPlayerByPosition(2)!.position - myPlayer.position) === 2 && ' (Partner)'}
+              {getPlayerByPosition(topPlayerPosition)?.name}
+              {Math.abs(getPlayerByPosition(topPlayerPosition)!.position - myPlayer.position) === 2 && ' (Partner)'}
             </div>
             <div className="hand">
-              {Array(getPlayerByPosition(2)?.hand.length || 0).fill(0).map((_, i) => (
-                <div key={i}>{renderFaceDownCard()}</div>
+              {Array(getPlayerByPosition(topPlayerPosition)?.hand.length || 0).fill(0).map((_, i) => (
+                <div key={`p${topPlayerPosition}-card-${i}`}>{renderFaceDownCard()}</div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Left Player (position 1) */}
-        {getPlayerByPosition(1) && (
+        {/* Left Player (next clockwise) */}
+        {getPlayerByPosition(leftPlayerPosition) && (
           <div className="player-slot left">
             <div className="player-name">
-              {getPlayerByPosition(1)?.name}
-              {Math.abs(getPlayerByPosition(1)!.position - myPlayer.position) === 2 && ' (Partner)'}
+              {getPlayerByPosition(leftPlayerPosition)?.name}
+              {Math.abs(getPlayerByPosition(leftPlayerPosition)!.position - myPlayer.position) === 2 && ' (Partner)'}
             </div>
             <div className="hand vertical">
-              {Array(getPlayerByPosition(1)?.hand.length || 0).fill(0).map((_, i) => (
-                <div key={i}>{renderFaceDownCard()}</div>
+              {Array(getPlayerByPosition(leftPlayerPosition)?.hand.length || 0).fill(0).map((_, i) => (
+                <div key={`p${leftPlayerPosition}-card-${i}`}>{renderFaceDownCard()}</div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Right Player (position 3) */}
-        {getPlayerByPosition(3) && (
+        {/* Right Player (previous/+3) */}
+        {getPlayerByPosition(rightPlayerPosition) && (
           <div className="player-slot right">
             <div className="player-name">
-              {getPlayerByPosition(3)?.name}
-              {Math.abs(getPlayerByPosition(3)!.position - myPlayer.position) === 2 && ' (Partner)'}
+              {getPlayerByPosition(rightPlayerPosition)?.name}
+              {Math.abs(getPlayerByPosition(rightPlayerPosition)!.position - myPlayer.position) === 2 && ' (Partner)'}
             </div>
             <div className="hand vertical">
-              {Array(getPlayerByPosition(3)?.hand.length || 0).fill(0).map((_, i) => (
-                <div key={i}>{renderFaceDownCard()}</div>
+              {Array(getPlayerByPosition(rightPlayerPosition)?.hand.length || 0).fill(0).map((_, i) => (
+                <div key={`p${rightPlayerPosition}-card-${i}`}>{renderFaceDownCard()}</div>
               ))}
             </div>
           </div>

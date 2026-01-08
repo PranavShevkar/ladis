@@ -233,25 +233,33 @@ export function checkRoundEnd(gameState: GameState): boolean {
 
     if (callingTeamTricks >= callingTeamTarget) {
       // Vakhaai won: reduce calling team's kalyas by bet amount
+      // If they don't have enough, the difference goes to opponent
       if (callingTeam === 0) {
         if (gameState.teamScores.team0.kalyas >= bet) {
           gameState.teamScores.team0.kalyas -= bet;
         } else {
+          const difference = bet - gameState.teamScores.team0.kalyas;
           gameState.teamScores.team0.kalyas = 0;
+          gameState.teamScores.team1.kalyas += difference;
         }
       } else {
         if (gameState.teamScores.team1.kalyas >= bet) {
           gameState.teamScores.team1.kalyas -= bet;
         } else {
+          const difference = bet - gameState.teamScores.team1.kalyas;
           gameState.teamScores.team1.kalyas = 0;
+          gameState.teamScores.team0.kalyas += difference;
         }
       }
     } else {
-      // Vakhaai lost: add 2x bet to calling team's kalyas
+      // Vakhaai lost: penalty (2x bet) minus opponent's kalyas goes to calling team
+      const penalty = bet * 2;
       if (callingTeam === 0) {
-        gameState.teamScores.team0.kalyas += bet * 2;
+        gameState.teamScores.team0.kalyas = penalty - gameState.teamScores.team1.kalyas;
+        gameState.teamScores.team1.kalyas = 0;
       } else {
-        gameState.teamScores.team1.kalyas += bet * 2;
+        gameState.teamScores.team1.kalyas = penalty - gameState.teamScores.team0.kalyas;
+        gameState.teamScores.team0.kalyas = 0;
       }
     }
   } else {

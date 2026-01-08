@@ -176,7 +176,7 @@ io.on('connection', (socket) => {
     room.gameState.phase = 'dealing_second';
 
     // Deal remaining 4 cards to each player using the same deck from round start
-    gameEngine.dealSecondCards(room.currentDeck, room.players);
+    gameEngine.dealSecondCards(room.currentDeck, room.gameState.players);
 
     room.gameState.phase = 'playing';
     // Hukum caller plays first
@@ -215,15 +215,9 @@ io.on('connection', (socket) => {
         setTimeout(() => {
           gameEngine.resetForNextRound(room.gameState);
           
-          // Check if all hands are empty - need to deal new deck
-          if (gameEngine.checkAllHandsEmpty(room.gameState)) {
-            // All cards exhausted, deal new deck
-            gameEngine.dealNewDeck(room.gameState);
-            startNewRound(room);
-          } else {
-            // Players still have cards, continue with vakhaai check
-            room.gameState.phase = 'vakhaai_check';
-          }
+          // Always deal new deck at start of each round
+          gameEngine.dealNewDeck(room.gameState);
+          startNewRound(room);
           
           io.to(roomCode).emit('gameState', room.gameState);
         }, 3000);
