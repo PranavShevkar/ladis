@@ -60,17 +60,17 @@ export function dealSecondCards(deck: Card[], players: Player[]): void {
   }
 }
 
-// Determine which team is shuffling based on kalya account
-// Rule: Team with more kalyas (losing team) shuffles
+// Determine which team is shuffling based on points account
+// Rule: Team with more points (losing team) shuffles
 // If both are 0 or equal, alternate based on round number
 export function determineShufflingTeam(gameState: GameState): 0 | 1 {
-  const team0Kalyas = gameState.teamScores.team0.kalyas;
-  const team1Kalyas = gameState.teamScores.team1.kalyas;
+  const team0Points = gameState.teamScores.team0.points;
+  const team1Points = gameState.teamScores.team1.points;
 
-  if (team0Kalyas > team1Kalyas) {
-    return 0; // Team 0 has more kalyas (losing), they shuffle
-  } else if (team1Kalyas > team0Kalyas) {
-    return 1; // Team 1 has more kalyas (losing), they shuffle
+  if (team0Points > team1Points) {
+    return 0; // Team 0 has more points (losing), they shuffle
+  } else if (team1Points > team0Points) {
+    return 1; // Team 1 has more points (losing), they shuffle
   } else {
     // Equal or both zero: alternate based on round number
     return (gameState.roundNumber % 2) as 0 | 1;
@@ -208,7 +208,7 @@ export function resolveTrick(gameState: GameState): void {
   gameState.handNumber++;
 }
 
-// Check if round is over and update kalyas
+// Check if round is over and update points
 export function checkRoundEnd(gameState: GameState): boolean {
   // Check if either team reached their target
   const team0Reached = gameState.tricks.team0 >= gameState.targetTricks.team0;
@@ -232,41 +232,41 @@ export function checkRoundEnd(gameState: GameState): boolean {
     const callingTeamTricks = callingTeam === 0 ? gameState.tricks.team0 : gameState.tricks.team1;
 
     if (callingTeamTricks >= callingTeamTarget) {
-      // Vakhaai won: reduce calling team's kalyas by bet amount
+      // Vakhaai won: reduce calling team's points by bet amount
       // If they don't have enough, the difference goes to opponent
       if (callingTeam === 0) {
-        if (gameState.teamScores.team0.kalyas >= bet) {
-          gameState.teamScores.team0.kalyas -= bet;
+        if (gameState.teamScores.team0.points >= bet) {
+          gameState.teamScores.team0.points -= bet;
         } else {
-          const difference = bet - gameState.teamScores.team0.kalyas;
-          gameState.teamScores.team0.kalyas = 0;
-          gameState.teamScores.team1.kalyas += difference;
+          const difference = bet - gameState.teamScores.team0.points;
+          gameState.teamScores.team0.points = 0;
+          gameState.teamScores.team1.points += difference;
         }
       } else {
-        if (gameState.teamScores.team1.kalyas >= bet) {
-          gameState.teamScores.team1.kalyas -= bet;
+        if (gameState.teamScores.team1.points >= bet) {
+          gameState.teamScores.team1.points -= bet;
         } else {
-          const difference = bet - gameState.teamScores.team1.kalyas;
-          gameState.teamScores.team1.kalyas = 0;
-          gameState.teamScores.team0.kalyas += difference;
+          const difference = bet - gameState.teamScores.team1.points;
+          gameState.teamScores.team1.points = 0;
+          gameState.teamScores.team0.points += difference;
         }
       }
     } else {
-      // Vakhaai lost: penalty (2x bet) minus opponent's kalyas goes to calling team
+      // Vakhaai lost: penalty (2x bet) minus opponent's points goes to calling team
       const penalty = bet * 2;
       if (callingTeam === 0) {
-        gameState.teamScores.team0.kalyas = penalty - gameState.teamScores.team1.kalyas;
-        gameState.teamScores.team1.kalyas = 0;
+        gameState.teamScores.team0.points = penalty - gameState.teamScores.team1.points;
+        gameState.teamScores.team1.points = 0;
       } else {
-        gameState.teamScores.team1.kalyas = penalty - gameState.teamScores.team0.kalyas;
-        gameState.teamScores.team0.kalyas = 0;
+        gameState.teamScores.team1.points = penalty - gameState.teamScores.team0.points;
+        gameState.teamScores.team0.points = 0;
       }
     }
   } else {
     // Regular play resolution
-    // Shuffling team = team with more kalyas (debt)
-    // Shuffling team wins = subtract 10 from their kalyas
-    // Non-shuffling team wins = add 5 to SHUFFLING team's kalyas (loser gets penalty)
+    // Shuffling team = team with more points (debt)
+    // Shuffling team wins = subtract 10 from their points
+    // Non-shuffling team wins = add 5 to SHUFFLING team's points (loser gets penalty)
     
     if (team0Reached) {
       // Team 0 won
@@ -299,12 +299,12 @@ export function checkRoundEnd(gameState: GameState): boolean {
     }
   }
 
-  // Update laddos (32 kalyas = 1 laddo, always positive)
+  // Update laddos (32 points = 1 laddo, always positive)
   gameState.teamScores.team0.laddos = Math.floor(
-    gameState.teamScores.team0.kalyas / 32
+    gameState.teamScores.team0.points / 32
   );
   gameState.teamScores.team1.laddos = Math.floor(
-    gameState.teamScores.team1.kalyas / 32
+    gameState.teamScores.team1.points / 32
   );
 
   return true;

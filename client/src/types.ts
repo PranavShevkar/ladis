@@ -16,7 +16,7 @@ export interface Player {
 }
 
 export interface TeamScore {
-  kalyas: number;
+  points: number;
   laddos: number;
 }
 

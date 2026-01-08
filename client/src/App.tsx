@@ -193,14 +193,14 @@ function App() {
       <div className="team-scores">
         <div className={`team-score ${myTeam === 0 ? 'my-team' : ''}`}>
           <h3>Team 0 {myTeam === 0 && '(You)'}</h3>
-          <div>Kalyas: <strong>{gameState.teamScores.team0.kalyas}</strong></div>
+          <div>Kalyas: <strong>{gameState.teamScores.team0.points % 32}</strong></div>
           <div>Laddos: <strong>{gameState.teamScores.team0.laddos}</strong></div>
           <div>Tricks: <strong>{gameState.tricks.team0}/{gameState.targetTricks.team0}</strong></div>
           {gameState.shufflingTeam === 0 && <div className="shuffling">🎴 Shuffling</div>}
         </div>
         <div className={`team-score ${myTeam === 1 ? 'my-team' : ''}`}>
           <h3>Team 1 {myTeam === 1 && '(You)'}</h3>
-          <div>Kalyas: <strong>{gameState.teamScores.team1.kalyas}</strong></div>
+          <div>Kalyas: <strong>{gameState.teamScores.team1.points % 32}</strong></div>
           <div>Laddos: <strong>{gameState.teamScores.team1.laddos}</strong></div>
           <div>Tricks: <strong>{gameState.tricks.team1}/{gameState.targetTricks.team1}</strong></div>
           {gameState.shufflingTeam === 1 && <div className="shuffling">🎴 Shuffling</div>}
@@ -212,7 +212,7 @@ function App() {
         {gameState.hukum && <div>Hukum (Trump): <strong className="hukum">{gameState.hukum}</strong></div>}
         {gameState.vakhaaiCall && (
           <div className="vakhaai-info">
-            Vakhaai: <strong>{gameState.vakhaaiCall.bet} kalyas</strong> by {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name}
+            Vakhaai: <strong>{gameState.vakhaaiCall.bet} points</strong> by {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name}
           </div>
         )}
         <div>Phase: <strong>{gameState.phase}</strong></div>
@@ -230,10 +230,10 @@ function App() {
           <h3>Vakhaai Check</h3>
           <p>Do you want to call Vakhaai?</p>
           <div className="vakhaai-buttons">
-            <button onClick={() => handleVakhaaiCall(4)}>4 Kalyas</button>
-            <button onClick={() => handleVakhaaiCall(8)}>8 Kalyas</button>
-            <button onClick={() => handleVakhaaiCall(16)}>16 Kalyas</button>
-            <button onClick={() => handleVakhaaiCall(32)}>32 Kalyas</button>
+            <button onClick={() => handleVakhaaiCall(4)}>4 Kalya</button>
+            <button onClick={() => handleVakhaaiCall(8)}>8 Kalya</button>
+            <button onClick={() => handleVakhaaiCall(16)}>16 Kalya</button>
+            <button onClick={() => handleVakhaaiCall(32)}>32 Kalya</button>
             <button onClick={handleSkipVakhaai} className="skip">Skip</button>
           </div>
         </div>

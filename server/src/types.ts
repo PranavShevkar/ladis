@@ -16,8 +16,8 @@ export interface Player {
 }
 
 export interface TeamScore {
-  kalyas: number; // Deficit tracking (negative = good, positive = bad)
-  laddos: number; // 32 kalyas = 1 laddo
+  points: number; // Deficit tracking (negative = good, positive = bad)
+  laddos: number; // 32 points = 1 laddo
 }
 
 export interface VakhaaiCall {

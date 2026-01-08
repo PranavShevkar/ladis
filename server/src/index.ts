@@ -43,8 +43,8 @@ function createInitialGameState(): GameState {
     leadSuit: null,
     tricks: { team0: 0, team1: 0 },
     teamScores: {
-      team0: { kalyas: 0, laddos: 0 },
-      team1: { kalyas: 0, laddos: 0 },
+      team0: { points: 0, laddos: 0 },
+      team1: { points: 0, laddos: 0 },
     },
     vakhaaiCall: null,
     roundNumber: 1,
@@ -145,7 +145,7 @@ io.on('connection', (socket) => {
     gameEngine.setTargetTricks(room.gameState);
 
     io.to(roomCode).emit('gameState', room.gameState);
-    console.log(`Vakhaai called: ${bet} kalyas by ${player.name}`);
+    console.log(`Vakhaai called: ${bet} points by ${player.name}`);
   });
 
   socket.on('skipVakhaai', (roomCode: string) => {

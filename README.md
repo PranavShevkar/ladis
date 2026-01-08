@@ -11,23 +11,24 @@ A 4-player partnership card game built with React, TypeScript, Node.js, and Sock
 
 - **Players**: 4 players in 2 teams (Team 0: positions 0&2, Team 1: positions 1&3)
 - **Deck**: 32 cards (7-8-9-10-J-Q-K-A in all 4 suits)
-- **Objective**: Clear your team's kalya debt
+- **Objective**: Clear your team's points debt
 
-### Kalya System (Debt Tracking)
+### Points System (Debt Tracking)
 - Both teams start at 0 kalyas
 - Only one team has kalyas (debt) at a time
 - Team with kalyas shuffles
-- Shuffling team needs 4 tricks to win round → subtract 10 kalyas
-- Non-shuffling team needs 5 tricks to win round → add 5 kalyas to their account
-- 32 kalyas = 1 laddo
-- Kalyas are always positive (deficit)
+- Shuffling team needs 4 tricks to win round → subtract 10 points
+- Non-shuffling team needs 5 tricks to win round → add 5 points to shuffling team's account
+- 32 points = 1 laddo
+- Points are always positive (deficit)
+- **Display**: Kalyas shown = points % 32 (remainder after laddos)
 
 ### Vakhaai (Solo Betting)
 - After first 4 cards dealt, any player can call vakhaai
-- Bet amounts: 4, 8, 16, or 32 kalyas
+- Bet amounts: 4, 8, 16, or 32 points
 - Must reach team's target (4 or 5 tricks) to win
-- Win: subtract bet from calling team's kalyas
-- Lose: add 2x bet to calling team's kalyas
+- Win: subtract bet from calling team's points
+- Lose: add 2x bet to calling team's points
 
 ### Game Flow
 1. **First 4 cards** dealt to each player
