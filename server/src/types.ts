@@ -25,6 +25,7 @@ export interface VakhaaiCall {
   playerPosition: number;
   bet: 4 | 8 | 16 | 32;
   active: boolean;
+  timestamp?: number; // For first caller priority
 }
 
 export interface TrickCard {
@@ -48,6 +49,7 @@ export interface GameState {
   players: Player[];
   currentPlayer: number; // Position 0-3
   shufflingTeam: 0 | 1; // Which team is shuffling this round
+  vakhaaiCountdown?: number; // Countdown timer for vakhaai bidding
   hukum: Suit | null; // Trump suit
   hukumCaller: number | null; // Position of player who chooses hukum (from non-shuffling team)
   currentTrick: TrickCard[];

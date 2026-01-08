@@ -52,6 +52,7 @@ export interface GameState {
   hukumCaller: number | null;
   currentTrick: TrickCard[];
   leadSuit: Suit | null;
+  vakhaaiCountdown?: number;
   tricks: {
     team0: number;
     team1: number;

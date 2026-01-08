@@ -149,8 +149,9 @@ function App() {
   }
 
   const myPlayer = getMyPlayer();
-  if (!myPlayer) {
-    // Player not found yet, show waiting screen
+  
+  // Show waiting screen if not all players have joined
+  if (!myPlayer || gameState.players.length < 4) {
     return (
       <div className="container">
         <h1>Ladis Card Game</h1>
@@ -212,7 +213,7 @@ function App() {
         {gameState.hukum && <div>Hukum (Trump): <strong className="hukum">{gameState.hukum}</strong></div>}
         {gameState.vakhaaiCall && (
           <div className="vakhaai-info">
-            Vakhaai: <strong>{gameState.vakhaaiCall.bet} points</strong> by {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name}
+            Vakhaai: <strong>{gameState.vakhaaiCall.bet} kalya</strong> by {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name}
           </div>
         )}
         <div>Phase: <strong>{gameState.phase}</strong></div>
@@ -228,14 +229,56 @@ function App() {
       {gameState.phase === 'vakhaai_check' && (
         <div className="vakhaai-section">
           <h3>Vakhaai Check</h3>
-          <p>Do you want to call Vakhaai?</p>
-          <div className="vakhaai-buttons">
-            <button onClick={() => handleVakhaaiCall(4)}>4 Kalya</button>
-            <button onClick={() => handleVakhaaiCall(8)}>8 Kalya</button>
-            <button onClick={() => handleVakhaaiCall(16)}>16 Kalya</button>
-            <button onClick={() => handleVakhaaiCall(32)}>32 Kalya</button>
-            <button onClick={handleSkipVakhaai} className="skip">Skip</button>
-          </div>
+          {gameState.vakhaaiCall && gameState.vakhaaiCountdown !== undefined ? (
+            <>
+              <div className="vakhaai-active">
+                <p>
+                  <strong>Vakhaai: {gameState.vakhaaiCall.bet} kalya</strong> by {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name}
+                </p>
+                <p className="countdown">
+                  Call another value in <strong>{gameState.vakhaaiCountdown}</strong> seconds
+                </p>
+              </div>
+              <div className="vakhaai-buttons">
+                <button 
+                  onClick={() => handleVakhaaiCall(4)} 
+                  disabled={4 <= gameState.vakhaaiCall.bet}
+                >
+                  4 Kalya
+                </button>
+                <button 
+                  onClick={() => handleVakhaaiCall(8)} 
+                  disabled={8 <= gameState.vakhaaiCall.bet}
+                >
+                  8 Kalya
+                </button>
+                <button 
+                  onClick={() => handleVakhaaiCall(16)} 
+                  disabled={16 <= gameState.vakhaaiCall.bet}
+                >
+                  16 Kalya
+                </button>
+                <button 
+                  onClick={() => handleVakhaaiCall(32)} 
+                  disabled={32 <= gameState.vakhaaiCall.bet}
+                >
+                  32 Kalya
+                </button>
+                <button onClick={handleSkipVakhaai} className="skip">Skip</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p>Do you want to call Vakhaai?</p>
+              <div className="vakhaai-buttons">
+                <button onClick={() => handleVakhaaiCall(4)}>4 Kalya</button>
+                <button onClick={() => handleVakhaaiCall(8)}>8 Kalya</button>
+                <button onClick={() => handleVakhaaiCall(16)}>16 Kalya</button>
+                <button onClick={() => handleVakhaaiCall(32)}>32 Kalya</button>
+                <button onClick={handleSkipVakhaai} className="skip">Skip</button>
+              </div>
+            </>
+          )}
         </div>
       )}
 

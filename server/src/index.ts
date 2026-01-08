@@ -24,6 +24,7 @@ const io = new Server(httpServer, {
 const PORT = process.env.PORT || 3003;
 
 const rooms = new Map<string, Room>();
+const vakhaaiTimers = new Map<string, NodeJS.Timeout>(); // Track countdown timers per room
 
 // Generate random room code
 function generateRoomCode(): string {
@@ -134,29 +135,79 @@ io.on('connection', (socket) => {
     const player = room.players.find((p) => p.id === socket.id);
     if (!player) return;
 
+    // Check if bet is higher than current vakhaai (or if it's the first call)
+    const currentBet = room.gameState.vakhaaiCall?.bet || 0;
+    if (bet <= currentBet) return;
+
+    // Clear existing timer if any
+    const existingTimer = vakhaaiTimers.get(roomCode);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    // Update vakhaai call
     room.gameState.vakhaaiCall = {
       playerId: socket.id,
       playerPosition: player.position,
       bet,
       active: true,
+      timestamp: Date.now(),
     };
 
-    room.gameState.phase = 'choosing_hukum';
-    gameEngine.setTargetTricks(room.gameState);
+    // If bet is 32 (max value), end phase immediately
+    if (bet === 32) {
+      room.gameState.phase = 'choosing_hukum';
+      room.gameState.vakhaaiCountdown = undefined;
+      gameEngine.setTargetTricks(room.gameState);
+      io.to(roomCode).emit('gameState', room.gameState);
+      console.log(`Vakhaai called: ${bet} kalya by ${player.name} - Max bet, ending phase`);
+      return;
+    }
 
+    // Start 5-second countdown
+    room.gameState.vakhaaiCountdown = 5;
     io.to(roomCode).emit('gameState', room.gameState);
-    console.log(`Vakhaai called: ${bet} points by ${player.name}`);
+
+    // Update countdown every second
+    const countdownInterval = setInterval(() => {
+      const currentRoom = rooms.get(roomCode);
+      if (!currentRoom || currentRoom.gameState.phase !== 'vakhaai_check') {
+        clearInterval(countdownInterval);
+        return;
+      }
+
+      currentRoom.gameState.vakhaaiCountdown = (currentRoom.gameState.vakhaaiCountdown || 0) - 1;
+      io.to(roomCode).emit('gameState', currentRoom.gameState);
+
+      if (currentRoom.gameState.vakhaaiCountdown <= 0) {
+        clearInterval(countdownInterval);
+        vakhaaiTimers.delete(roomCode);
+        
+        // Auto-end vakhaai phase
+        currentRoom.gameState.phase = 'choosing_hukum';
+        currentRoom.gameState.vakhaaiCountdown = undefined;
+        gameEngine.setTargetTricks(currentRoom.gameState);
+        io.to(roomCode).emit('gameState', currentRoom.gameState);
+      }
+    }, 1000);
+
+    vakhaaiTimers.set(roomCode, countdownInterval as any);
+    console.log(`Vakhaai called: ${bet} kalya by ${player.name}`);
   });
 
   socket.on('skipVakhaai', (roomCode: string) => {
     const room = rooms.get(roomCode);
     if (!room || room.gameState.phase !== 'vakhaai_check') return;
 
-    room.gameState.phase = 'choosing_hukum';
-    gameEngine.setTargetTricks(room.gameState);
-
-    io.to(roomCode).emit('gameState', room.gameState);
-    console.log('All players skipped vakhaai');
+    // If no vakhaai has been called yet, and all players skip, end phase
+    if (!room.gameState.vakhaaiCall) {
+      room.gameState.phase = 'choosing_hukum';
+      gameEngine.setTargetTricks(room.gameState);
+      io.to(roomCode).emit('gameState', room.gameState);
+      console.log('All players skipped vakhaai');
+    }
+    // If vakhaai is active, skip doesn't reset timer, just acknowledge
+    console.log(`Player skipped vakhaai in room ${roomCode}`);
   });
 
   socket.on('chooseHukum', ({ roomCode, suit }: { roomCode: string; suit: Suit }) => {
