@@ -12,6 +12,7 @@ function App() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [myPlayerId, setMyPlayerId] = useState('');
   const [error, setError] = useState('');
+  const [showRules, setShowRules] = useState(false);
 
   useEffect(() => {
     const newSocket = io(SERVER_URL);
@@ -186,7 +187,62 @@ function App() {
       <h1>Ladis Card Game</h1>
       <div className="room-info">
         Room: <strong>{roomCode}</strong> | Round: <strong>{gameState.roundNumber}</strong>
+        <button className="info-button" onClick={() => setShowRules(true)} title="Game Rules">ℹ️</button>
       </div>
+
+      {/* Rules Modal */}
+      {showRules && (
+        <div className="modal-overlay" onClick={() => setShowRules(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowRules(false)}>×</button>
+            <h2>Game Rules</h2>
+            <div className="rules-content">
+              <h3>Players & Objective</h3>
+              <ul>
+                <li>4 players in 2 teams (Team 0: positions 0&2, Team 1: positions 1&3)</li>
+                <li>32-card deck (7-8-9-10-J-Q-K-A in all 4 suits)</li>
+                <li>Goal: Clear your team's points debt</li>
+              </ul>
+
+              <h3>Points System</h3>
+              <ul>
+                <li>Both teams start at 0 points</li>
+                <li>Team with more points shuffles</li>
+                <li>Shuffling team needs 4 tricks to win → subtract 10 points</li>
+                <li>Non-shuffling team needs 5 tricks → add 5 points to shuffling team</li>
+                <li>32 points = 1 laddo</li>
+                <li>Display shows: Kalyas = points % 32 (remainder after laddos)</li>
+              </ul>
+
+              <h3>Vakhaai (Betting)</h3>
+              <ul>
+                <li>After first 4 cards dealt, players can bet: 4, 8, 16, or 32 points</li>
+                <li>5-second countdown starts after first bet</li>
+                <li>Only higher bids allowed (timer resets on new bid)</li>
+                <li>Win: subtract bet from team's points</li>
+                <li>Lose: add 2x bet to team's points</li>
+              </ul>
+
+              <h3>Game Flow</h3>
+              <ol>
+                <li>First 4 cards dealt to each player</li>
+                <li>Vakhaai betting phase (optional)</li>
+                <li>Non-shuffling team player chooses Hukum (trump)</li>
+                <li>Remaining 4 cards dealt</li>
+                <li>Players play 8 tricks</li>
+                <li>Round ends, scores update, next round begins</li>
+              </ol>
+
+              <h3>Playing Tricks</h3>
+              <ul>
+                <li>Must follow lead suit if possible</li>
+                <li>Hukum (trump) beats all other suits</li>
+                <li>Highest card of lead suit wins (if no hukum played)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && <div className="error">{error}</div>}
 
