@@ -211,16 +211,18 @@ function App() {
                 <li>Shuffling team needs 4 tricks to win → subtract 10 points</li>
                 <li>Non-shuffling team needs 5 tricks → add 5 points to shuffling team</li>
                 <li>32 points = 1 laddo</li>
-                <li>Display shows: Kalyas = points % 32 (remainder after laddos)</li>
               </ul>
 
               <h3>Vakhaai (Betting)</h3>
               <ul>
-                <li>After first 4 cards dealt, players can bet: 4, 8, 16, or 32 points</li>
-                <li>5-second countdown starts after first bet</li>
-                <li>Only higher bids allowed (timer resets on new bid)</li>
-                <li>Win: subtract bet from team's points</li>
-                <li>Lose: add 2x bet to team's points</li>
+                <li>After first 4 cards dealt, players can bet: 4, 8, 16, or 32 points, or skip</li>
+                <li>First action (bet or skip) starts 5-second countdown</li>
+                <li>Timer resets only on higher bids (not on skip)</li>
+                <li>Caller plays alone against opposing team (teammate benched with face-up cards)</li>
+                <li>Hukum phase skipped - caller plays first</li>
+                <li>Caller must win ALL 4 tricks to win the bet</li>
+                <li>Win: subtract bet from calling team's points</li>
+                <li>Lose (even 1 trick lost): add 2x bet to calling team's points</li>
               </ul>
 
               <h3>Game Flow</h3>
@@ -266,10 +268,15 @@ function App() {
 
       {/* Game Phase Info */}
       <div className="game-info">
+        {gameState.benchedPlayerId && gameState.vakhaaiCall && (
+          <div className="vakhaai-active-banner">
+            ⚔️ VAKHAAI ACTIVE: {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name} vs Team {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.team === 0 ? 1 : 0}
+          </div>
+        )}
         {gameState.hukum && <div>Hukum (Trump): <strong className="hukum">{gameState.hukum}</strong></div>}
-        {gameState.vakhaaiCall && (
+        {gameState.vakhaaiCall && !gameState.benchedPlayerId && (
           <div className="vakhaai-info">
-            Vakhaai: <strong>{gameState.vakhaaiCall.bet} kalya</strong> by {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name}
+            Vakhaai: <strong>{gameState.vakhaaiCall.bet} points</strong> by {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name}
           </div>
         )}
         <div>Phase: <strong>{gameState.phase}</strong></div>
@@ -285,12 +292,16 @@ function App() {
       {gameState.phase === 'vakhaai_check' && (
         <div className="vakhaai-section">
           <h3>Vakhaai Check</h3>
-          {gameState.vakhaaiCall && gameState.vakhaaiCountdown !== undefined ? (
+          {gameState.vakhaaiCountdown !== undefined ? (
             <>
               <div className="vakhaai-active">
-                <p>
-                  <strong>Vakhaai: {gameState.vakhaaiCall.bet} kalya</strong> by {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name}
-                </p>
+                {gameState.vakhaaiCall ? (
+                  <p>
+                    <strong>Vakhaai: {gameState.vakhaaiCall.bet} kalya</strong> by {getPlayerByPosition(gameState.vakhaaiCall.playerPosition)?.name}
+                  </p>
+                ) : (
+                  <p>Vakhaai skipped</p>
+                )}
                 <p className="countdown">
                   Call another value in <strong>{gameState.vakhaaiCountdown}</strong> seconds
                 </p>
@@ -298,25 +309,25 @@ function App() {
               <div className="vakhaai-buttons">
                 <button 
                   onClick={() => handleVakhaaiCall(4)} 
-                  disabled={4 <= gameState.vakhaaiCall.bet}
+                  disabled={gameState.vakhaaiCall ? 4 <= gameState.vakhaaiCall.bet : false}
                 >
                   4 Kalya
                 </button>
                 <button 
                   onClick={() => handleVakhaaiCall(8)} 
-                  disabled={8 <= gameState.vakhaaiCall.bet}
+                  disabled={gameState.vakhaaiCall ? 8 <= gameState.vakhaaiCall.bet : false}
                 >
                   8 Kalya
                 </button>
                 <button 
                   onClick={() => handleVakhaaiCall(16)} 
-                  disabled={16 <= gameState.vakhaaiCall.bet}
+                  disabled={gameState.vakhaaiCall ? 16 <= gameState.vakhaaiCall.bet : false}
                 >
                   16 Kalya
                 </button>
                 <button 
                   onClick={() => handleVakhaaiCall(32)} 
-                  disabled={32 <= gameState.vakhaaiCall.bet}
+                  disabled={gameState.vakhaaiCall ? 32 <= gameState.vakhaaiCall.bet : false}
                 >
                   32 Kalya
                 </button>
@@ -339,7 +350,7 @@ function App() {
       )}
 
       {/* Hukum Selection */}
-      {gameState.phase === 'choosing_hukum' && (
+      {gameState.phase === 'choosing_hukum' && !gameState.benchedPlayerId && (
         <div className="hukum-section">
           <h3>Choose Hukum (Trump)</h3>
           {myPlayer.position === gameState.hukumCaller ? (
@@ -392,11 +403,15 @@ function App() {
             <div className="player-name">
               {getPlayerByPosition(topPlayerPosition)?.name}
               {Math.abs(getPlayerByPosition(topPlayerPosition)!.position - myPlayer.position) === 2 && ' (Partner)'}
+              {getPlayerByPosition(topPlayerPosition)?.id === gameState.benchedPlayerId && ' (BENCHED)'}
             </div>
             <div className="hand">
-              {Array(getPlayerByPosition(topPlayerPosition)?.hand.length || 0).fill(0).map((_, i) => (
-                <div key={`p${topPlayerPosition}-card-${i}`}>{renderFaceDownCard()}</div>
-              ))}
+              {getPlayerByPosition(topPlayerPosition)?.id === gameState.benchedPlayerId
+                ? getPlayerByPosition(topPlayerPosition)?.hand.map((card) => renderCard(card))
+                : Array(getPlayerByPosition(topPlayerPosition)?.hand.length || 0).fill(0).map((_, i) => (
+                    <div key={`p${topPlayerPosition}-card-${i}`}>{renderFaceDownCard()}</div>
+                  ))
+              }
             </div>
           </div>
         )}
@@ -407,11 +422,15 @@ function App() {
             <div className="player-name">
               {getPlayerByPosition(leftPlayerPosition)?.name}
               {Math.abs(getPlayerByPosition(leftPlayerPosition)!.position - myPlayer.position) === 2 && ' (Partner)'}
+              {getPlayerByPosition(leftPlayerPosition)?.id === gameState.benchedPlayerId && ' (BENCHED)'}
             </div>
             <div className="hand vertical">
-              {Array(getPlayerByPosition(leftPlayerPosition)?.hand.length || 0).fill(0).map((_, i) => (
-                <div key={`p${leftPlayerPosition}-card-${i}`}>{renderFaceDownCard()}</div>
-              ))}
+              {getPlayerByPosition(leftPlayerPosition)?.id === gameState.benchedPlayerId
+                ? getPlayerByPosition(leftPlayerPosition)?.hand.map((card) => renderCard(card))
+                : Array(getPlayerByPosition(leftPlayerPosition)?.hand.length || 0).fill(0).map((_, i) => (
+                    <div key={`p${leftPlayerPosition}-card-${i}`}>{renderFaceDownCard()}</div>
+                  ))
+              }
             </div>
           </div>
         )}
@@ -422,11 +441,15 @@ function App() {
             <div className="player-name">
               {getPlayerByPosition(rightPlayerPosition)?.name}
               {Math.abs(getPlayerByPosition(rightPlayerPosition)!.position - myPlayer.position) === 2 && ' (Partner)'}
+              {getPlayerByPosition(rightPlayerPosition)?.id === gameState.benchedPlayerId && ' (BENCHED)'}
             </div>
             <div className="hand vertical">
-              {Array(getPlayerByPosition(rightPlayerPosition)?.hand.length || 0).fill(0).map((_, i) => (
-                <div key={`p${rightPlayerPosition}-card-${i}`}>{renderFaceDownCard()}</div>
-              ))}
+              {getPlayerByPosition(rightPlayerPosition)?.id === gameState.benchedPlayerId
+                ? getPlayerByPosition(rightPlayerPosition)?.hand.map((card) => renderCard(card))
+                : Array(getPlayerByPosition(rightPlayerPosition)?.hand.length || 0).fill(0).map((_, i) => (
+                    <div key={`p${rightPlayerPosition}-card-${i}`}>{renderFaceDownCard()}</div>
+                  ))
+              }
             </div>
           </div>
         )}

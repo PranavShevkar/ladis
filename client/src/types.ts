@@ -53,6 +53,7 @@ export interface GameState {
   currentTrick: TrickCard[];
   leadSuit: Suit | null;
   vakhaaiCountdown?: number;
+  benchedPlayerId?: string;
   tricks: {
     team0: number;
     team1: number;

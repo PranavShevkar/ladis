@@ -50,6 +50,7 @@ export interface GameState {
   currentPlayer: number; // Position 0-3
   shufflingTeam: 0 | 1; // Which team is shuffling this round
   vakhaaiCountdown?: number; // Countdown timer for vakhaai bidding
+  benchedPlayerId?: string; // Player ID of benched teammate during vakhaai
   hukum: Suit | null; // Trump suit
   hukumCaller: number | null; // Position of player who chooses hukum (from non-shuffling team)
   currentTrick: TrickCard[];

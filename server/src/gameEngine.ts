@@ -166,9 +166,15 @@ export function playCard(
 
 // Determine the winner of a trick
 export function resolveTrick(gameState: GameState): void {
-  if (gameState.currentTrick.length !== 4) return;
+  if (gameState.currentTrick.length !== 4 && gameState.currentTrick.length !== 3) return;
+  
+  // In vakhaai mode, only 3 cards are played
+  const isVakhaai = gameState.benchedPlayerId !== undefined;
+  const expectedCards = isVakhaai ? 3 : 4;
+  
+  if (gameState.currentTrick.length !== expectedCards) return;
 
-  const hukum = gameState.hukum!;
+  const hukum = gameState.hukum; // Can be null in vakhaai
   const leadSuit = gameState.leadSuit!;
 
   let winningCard = gameState.currentTrick[0];
@@ -178,17 +184,17 @@ export function resolveTrick(gameState: GameState): void {
     const card = trickCard.card;
     let value = RANK_VALUES[card.rank];
 
-    // Hukum (trump) cards beat non-hukum cards
-    if (card.suit === hukum && winningCard.card.suit !== hukum) {
+    // If there's hukum, trump cards beat non-trump cards
+    if (hukum && card.suit === hukum && winningCard.card.suit !== hukum) {
       winningCard = trickCard;
       winningValue = value + 100; // Trump bonus
-    } else if (card.suit === hukum && winningCard.card.suit === hukum) {
+    } else if (hukum && card.suit === hukum && winningCard.card.suit === hukum) {
       // Both are trump, higher rank wins
       if (value > winningValue - 100) {
         winningCard = trickCard;
         winningValue = value + 100;
       }
-    } else if (card.suit === leadSuit && winningCard.card.suit !== hukum) {
+    } else if (card.suit === leadSuit && (!hukum || winningCard.card.suit !== hukum)) {
       // Following lead suit
       if (value > winningValue) {
         winningCard = trickCard;
@@ -220,7 +226,35 @@ export function resolveTrick(gameState: GameState): void {
 
 // Check if round is over and update points
 export function checkRoundEnd(gameState: GameState): boolean {
-  // Check if either team reached their target
+  // Special handling for vakhaai mode
+  if (gameState.benchedPlayerId) {
+    // In vakhaai: caller must win ALL 4 tricks
+    // If opposing team wins even 1 trick, they win immediately
+    const callingPlayer = gameState.players.find(
+      p => p.id === gameState.vakhaaiCall!.playerId
+    )!;
+    const callingTeam = callingPlayer.team;
+    const opposingTeam = callingTeam === 0 ? 1 : 0;
+    
+    const callingTeamTricks = callingTeam === 0 ? gameState.tricks.team0 : gameState.tricks.team1;
+    const opposingTeamTricks = opposingTeam === 0 ? gameState.tricks.team0 : gameState.tricks.team1;
+    
+    // If opposing team won any trick, vakhaai fails immediately
+    if (opposingTeamTricks > 0) {
+      handleVakhaaiLoss(gameState, callingTeam);
+      return true;
+    }
+    
+    // If all 4 tricks played and caller won all, vakhaai succeeds
+    if (callingTeamTricks === 4) {
+      handleVakhaaiWin(gameState, callingTeam);
+      return true;
+    }
+    
+    return false; // Continue playing
+  }
+  
+  // Normal mode: check if either team reached their target
   const team0Reached = gameState.tricks.team0 >= gameState.targetTricks.team0;
   const team1Reached = gameState.tricks.team1 >= gameState.targetTricks.team1;
 
@@ -228,10 +262,9 @@ export function checkRoundEnd(gameState: GameState): boolean {
     return false; // Round continues
   }
 
-  // Round is over, calculate kalya changes
+  // Round is over, calculate points changes
   if (gameState.vakhaaiCall && gameState.vakhaaiCall.active) {
-    // Vakhaai resolution
-    // Team still needs to reach their target (4 or 5), not all 8 tricks
+    // Normal vakhaai resolution (shouldn't reach here with new logic, but keep for safety)
     const callingPlayer = gameState.players.find(
       p => p.id === gameState.vakhaaiCall!.playerId
     )!;
@@ -320,6 +353,70 @@ export function checkRoundEnd(gameState: GameState): boolean {
   return true;
 }
 
+// Handle vakhaai win: caller wins all 4 tricks
+function handleVakhaaiWin(gameState: GameState, callingTeam: 0 | 1): void {
+  const bet = gameState.vakhaaiCall!.bet;
+  const opposingTeam = callingTeam === 0 ? 1 : 0;
+  
+  if (callingTeam === 0) {
+    // Subtract bet from calling team
+    if (gameState.teamScores.team0.points >= bet) {
+      gameState.teamScores.team0.points -= bet;
+    } else {
+      // Caller doesn't have enough, opponent gets the difference
+      const difference = bet - gameState.teamScores.team0.points;
+      gameState.teamScores.team0.points = 0;
+      gameState.teamScores.team1.points += difference;
+    }
+  } else {
+    // Subtract bet from calling team
+    if (gameState.teamScores.team1.points >= bet) {
+      gameState.teamScores.team1.points -= bet;
+    } else {
+      // Caller doesn't have enough, opponent gets the difference
+      const difference = bet - gameState.teamScores.team1.points;
+      gameState.teamScores.team1.points = 0;
+      gameState.teamScores.team0.points += difference;
+    }
+  }
+  
+  // Update laddos
+  gameState.teamScores.team0.laddos = Math.floor(gameState.teamScores.team0.points / 32);
+  gameState.teamScores.team1.laddos = Math.floor(gameState.teamScores.team1.points / 32);
+}
+
+// Handle vakhaai loss: opposing team won at least 1 trick
+function handleVakhaaiLoss(gameState: GameState, callingTeam: 0 | 1): void {
+  const bet = gameState.vakhaaiCall!.bet;
+  const penalty = bet * 2;
+  const opposingTeam = callingTeam === 0 ? 1 : 0;
+  
+  // Subtract 2x bet from opposing team
+  if (opposingTeam === 0) {
+    if (gameState.teamScores.team0.points >= penalty) {
+      gameState.teamScores.team0.points -= penalty;
+    } else {
+      // Opponent doesn't have enough, caller gets the difference
+      const difference = penalty - gameState.teamScores.team0.points;
+      gameState.teamScores.team0.points = 0;
+      gameState.teamScores.team1.points += difference;
+    }
+  } else {
+    if (gameState.teamScores.team1.points >= penalty) {
+      gameState.teamScores.team1.points -= penalty;
+    } else {
+      // Opponent doesn't have enough, caller gets the difference
+      const difference = penalty - gameState.teamScores.team1.points;
+      gameState.teamScores.team1.points = 0;
+      gameState.teamScores.team0.points += difference;
+    }
+  }
+  
+  // Update laddos
+  gameState.teamScores.team0.laddos = Math.floor(gameState.teamScores.team0.points / 32);
+  gameState.teamScores.team1.laddos = Math.floor(gameState.teamScores.team1.points / 32);
+}
+
 // Check if all players have no cards left
 export function checkAllHandsEmpty(gameState: GameState): boolean {
   return gameState.players.every(player => player.hand.length === 0);
@@ -335,6 +432,7 @@ export function resetForNextRound(gameState: GameState): void {
   gameState.targetTricks.team1 = 0;
   gameState.hukum = null;
   gameState.vakhaaiCall = null;
+  gameState.benchedPlayerId = undefined;
   gameState.currentTrick = [];
   gameState.leadSuit = null;
   
