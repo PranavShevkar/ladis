@@ -4,6 +4,8 @@ A 4-player partnership card game built with React, TypeScript, Node.js, and Sock
 
 ## Live Demo
 
+🎮 **Play Now**: [https://ladis-client.vercel.app/](https://ladis-client.vercel.app/)
+
 - **Client**: [Deploy to Vercel](https://vercel.com/new)
 - **Server**: [Deploy to Railway](https://railway.app/new)
 
